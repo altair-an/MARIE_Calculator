@@ -1,0 +1,140 @@
+﻿Input
+Store X
+Input
+Store Operator
+Input
+Store Y
+
+/Operator check for plus
+Load Operator 
+Subt Plus
+Skipcond 400  /check if Operator input - plus == 0
+Jump MinusCheck /!0 then call for MinusCheck
+Jump Add /call for Add when skipcond is true
+
+/Operator check for minus
+MinusCheck, Load Operator
+       	Subt Minus
+        Skipcond 400  
+        Jump MultiplyCheck /!0 then call for MultiplyCheck
+        Jump Subtraction
+
+/Operator check Multiply 
+MultiplyCheck, Load Operator
+		Subt Mult
+        Skipcond 400
+        Jump DivisionCheck
+		Jump Multiply
+        
+/Operator check for Division
+DivisionCheck, Clear
+		Store total /reset total to 0
+		Load Operator
+		Subt Div
+        Skipcond 400
+        Jump Invalid  /if none of the skipcond works then jumps to invalid function
+		Jump Division
+        
+/Invalid Function
+Invalid, Load Wrong
+	Output
+	Halt
+    
+/Add Function
+Add,Load X
+	Add  Y
+	Output
+	Halt
+    
+/Subtraction Function
+Subtraction,Load X
+	Subt Y
+	Output
+	Halt
+    
+/Multiply Functions
+Multiply, Clear /set AC to 0
+	Store total /resetting total to 0 for each multiplication run
+	Store negativeCheck /also reset negativeCheck flag
+
+    Load Y 
+    Skipcond 400 /checking if Y == 0
+    Jump checkNegative /false - then check negative or positive
+    Jump Invalid /true - return 0
+
+/Check if second input Y is negative. Flips -Y into +Y and update flag for total return later.
+checkNegative, Load Y
+	Skipcond 000 /if Y is negative 
+	Jump loop /false if Y is positive then jump to loop
+    Subt Y /true that Y is negative
+    Subt Y / --Y twice so we have positive Y
+    Store Y /save new Y
+    Clear /reset AC to 0
+    Subt one 
+	Store negativeCheck /since input is -Y then set this flag to -1
+    Jump loop /loop call
+	
+    
+/Looping Function for Multiply
+loop,	Load total
+	Add X
+	Store total /Add X to "total" accumulator for each loop
+		
+	Load Y
+	Subt one
+	Store Y /Loop counter - subtracts 1 from Y for each addition of X
+	
+	Skipcond 400 /check if Y == 0 (done), if not then loop again
+	Jump loop /loop call
+    
+    Load negativeCheck /checking if result should be negative or not
+	Skipcond 400
+    Jump negativeTotal /if negativeCheck == -1 then jump to this func
+	Load total /if negativeCheck == 0 then skip above and continue here
+    Output
+	Halt
+
+/This function negates the total calculated from the loop based on input Y
+/This accounts for both negative XY or just negative Y.
+/For instance, -X input would result in -X + -X + -X.... = -total after the loop
+/-Y input, this function would return -total--total--total = -total + total + total = total
+negativeTotal, Load total
+	Subt total
+	Subt total
+    Output
+	Halt
+
+/Division Functions. Assume only positive operands
+Division, Load X 
+    Subt Y
+    Skipcond 000 /check for positive or negative
+    Jump DivLoop /execute if still positive
+    Jump DivResult /execute if X-Y == 0 or negative
+
+/Divison Loop
+DivLoop, Store X /update X after Subt Y
+	Load total 
+    Add one
+    Store total /increment total by 1 after each subt
+	Jump Division /loop call
+
+/Return the Quotient then Remainder
+DivResult, Load total
+	Output
+	Load X /Remainder, whatever is left in X
+    Output
+	Halt
+
+/Variable List
+Plus,	DEC 43  /DEC value for + input
+Minus,	DEC 45	/DEC value for - input 
+Mult,	DEC 42  /DEC for * input
+Div,	DEC 47 	/DEC for / input
+X, DEC 0	/to hold first input
+Y, DEC 0	/to hold 2nd input
+Operator, DEC 0	/to hold operator input
+Wrong, DEC 0 /use for invalid function to load and return 0
+total, DEC 0 /total accumulator for multiply and division 
+negativeCheck, DEC 0 /if set to -1 then return total as a negative value
+one, DEC 1 /use for increment or decrement
+Debug, DEC 999
